@@ -12,9 +12,11 @@
     "@nuxtjs/axios": "^5.13.1",
     "@nuxtjs/pwa": "^3.3.5",
     "core-js": "^3.9.1",
+    "crumb-scss": "^1.4.0",
     "format-money2": "^1.0.0",
     "lodash": "^4.17.21",
-    "nuxt": "^2.15.3"
+    "nuxt": "^2.15.3",
+    "vuelidate": "^0.7.6"
   },
   "devDependencies": {
     "@nuxtjs/vuetify": "^1.11.3"

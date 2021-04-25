@@ -1,9 +1,9 @@
 <template>
   <v-row>
     <v-col cols="12">
-      <v-btn @click="addItem">
+      <v-btn @click="addItem(paths, { _id: Date.now(), ...DEFAULT_PATH })">
         <v-icon>mdi-plus</v-icon>
-        nuevo
+        nuevo camino
       </v-btn>
     </v-col>
 
@@ -24,7 +24,7 @@
 
           <v-btn
             v-if="paths.length > 1"
-            @click="removeItem(pathIndex)"
+            @click="deleteItem(paths, pathItem._id)"
             class="mb-4 ml-3"
           >
             eliminar
@@ -39,19 +39,55 @@
           ></v-text-field>
 
           <v-text-field
-            :label="`Comisión ${commissionIndex + 1}`"
-            type="number"
-            v-for="(commission, commissionIndex) in pathItem.commissions"
+            v-for="(commissionItem, commissionIndex) in pathItem.commissions"
+            v-model="commissionItem.value"
+            :label="`Comisión: ${
+              commissionItem.name ? commissionItem.name : commissionIndex + 1
+            }`"
             :key="commissionIndex"
-            v-model="commission.value"
+            type="number"
             min="0"
-            :append-icon="pathItem.commissions.length > 1 ? 'mdi-close' : ''"
-            @click:append="removeCommision(pathIndex, commissionIndex)"
-          ></v-text-field>
+          >
+            <template v-slot:append>
+              <v-icon
+                left
+                @click="
+                  setModal(modalCommission, {
+                    data: {
+                      name: commissionItem.name,
+                      value: commissionItem.value,
+                      _id: commissionItem._id,
+                      pathIndex,
+                      commissionIndex,
+                    },
+                  })
+                "
+              >
+                mdi-pencil
+              </v-icon>
 
-          <v-btn @click="addCommision(pathIndex)" class="mb-4">
+              <v-icon
+                left
+                v-if="pathItem.commissions.length > 1"
+                @click="
+                  deleteItem(paths[pathIndex].commissions, commissionItem._id)
+                "
+              >
+                mdi-close
+              </v-icon>
+            </template>
+          </v-text-field>
+
+          <v-btn
+            @click="
+              setModal(modalCommission, {
+                data: { ...DEFAULT_COMMISSION, pathIndex },
+              })
+            "
+            class="mb-4"
+          >
             <v-icon>mdi-plus</v-icon>
-            nuevo
+            nueva comisión
           </v-btn>
 
           <v-radio-group v-model="pathItem.money">
@@ -100,46 +136,99 @@
         </v-card-text>
       </v-card>
     </v-col>
+
+    <ModalFormCommission
+      :active="modalCommission.active"
+      :data="modalCommission.data"
+      :isLoading="modalCommission.isLoading"
+      @close="closeModal(modalCommission)"
+      @submit="submitCommission"
+    />
   </v-row>
 </template>
 
 <script>
 import formatMoney from "format-money2";
 import { get } from "lodash";
+import ModalFormCommission from "@/components/Shared/ModalFormCommission";
+import modalFormUtilsMixin from "@/mixins/modal-form-utils";
 
 export default {
+  mixins: [modalFormUtilsMixin],
+
+  components: {
+    ModalFormCommission,
+  },
+
   data() {
     return {
-      radios: "Duckduckgo",
+      modalCommission: {
+        data: {},
+        active: false,
+        isLoading: false,
+      },
+
+      DEFAULT_PATH: {
+        commissions: [{ value: 0, name: null, _id: 1 }],
+        value: 0,
+        dolarPrice: 0,
+        money: "USDT",
+        name: null,
+      },
+
+      DEFAULT_COMMISSION: {
+        value: 0,
+        name: null,
+      },
+
       moneyConfig: [2, ",", "."],
+
       paths: [
         {
-          commissions: [{ value: "1.73" }, { value: "2.62" }],
+          commissions: [
+            { value: "1.73", name: "Wise", _id: 1 },
+            { value: "2.62", name: "Binance", _id: 2 },
+          ],
           value: "400",
           dolarPrice: "162.08",
           name: "WISE>BINANCE>ARS",
           money: "USDT",
+          _id: 1,
         },
         {
-          commissions: [{ value: "1.73" }, { value: "2.62" }, { value: "2" }],
+          commissions: [
+            { value: "1.73", name: "Wise", _id: 3 },
+            { value: "2.62", name: "Binance", _id: 4 },
+            { value: "2", name: "Dolar fisico", _id: 5 },
+          ],
           value: "400",
           dolarPrice: "146",
           name: "WISE>BINANCE>DOLAR_FISICO>ARS",
-          money: "USDT",
+          money: "USD",
+          _id: 2,
         },
         {
-          commissions: [{ value: "3" }, { value: "5" }],
+          commissions: [
+            { value: "3", name: "Payoneer", _id: 6 },
+            { value: "5", name: "Dolar fisico", _id: 7 },
+          ],
           value: "400",
           dolarPrice: "146",
           name: "PAYONEER>DOLAR_FISICO>ARS",
-          money: "USDT",
+          money: "USD",
+          _id: 3,
         },
         {
-          commissions: [{ value: "3" }, { value: "6" }, { value: "2" }],
+          commissions: [
+            { value: "3", name: "Payoneer", _id: 8 },
+            { value: "6", name: "Binance", _id: 9 },
+            { value: "2", name: "Dolar Fisico", _id: 10 },
+          ],
           value: "400",
           dolarPrice: "146",
           name: "PAYONEER>BINANCE>DOLAR_FISICO>ARS",
-          money: "USDT",
+          money: "USD",
+          _id: 4,
         },
       ],
     };
@@ -174,24 +263,14 @@ export default {
 
     get,
 
-    addCommision(pathIndex) {
-      this.paths[pathIndex].commissions.push({ value: 0 });
-    },
-
-    removeCommision(pathIndex, commisionIndex) {
-      if (this.paths[pathIndex].commissions.length > 1) {
-        this.paths[pathIndex].commissions.splice(commisionIndex, 1);
-      }
-    },
-
     totalDolar({ commissions, value = 0 }) {
       return commissions.reduce((ant, comissionItem) => {
-        const resultCommision = parseFloat(
+        const resultCommission = parseFloat(
           (parseFloat(ant).toFixed(2) *
             parseFloat(comissionItem.value).toFixed(2)) /
             100
         ).toFixed(2);
-        return parseFloat(ant - resultCommision).toFixed(2);
+        return parseFloat(ant - resultCommission).toFixed(2);
       }, value);
     },
 
@@ -207,18 +286,19 @@ export default {
       return ((this.totalFee(pathItem) * 100) / pathItem.value).toFixed(2);
     },
 
-    addItem() {
-      this.paths.push({
-        commissions: [{ value: 0 }],
-        value: 0,
-        dolarPrice: 0,
-      });
-    },
-
-    removeItem(index) {
-      if (this.paths.length > 1) {
-        this.paths.splice(index, 1);
+    submitCommission({ name, value, pathIndex, commissionIndex, _id }) {
+      if (_id) {
+        this.paths[pathIndex].commissions[commissionIndex].name = name;
+        this.paths[pathIndex].commissions[commissionIndex].value = value;
+      } else {
+        this.addItem(this.paths[pathIndex].commissions, {
+          _id: Date.now(),
+          name,
+          value,
+        });
       }
+
+      this.closeModal(this.modalCommission);
     },
   },
 };
