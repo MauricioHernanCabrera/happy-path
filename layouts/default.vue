@@ -2,6 +2,8 @@
   <v-app dark>
     <v-app-bar fixed app>
       <v-toolbar-title v-text="title" />
+
+      <v-spacer></v-spacer>
     </v-app-bar>
 
     <v-main>
@@ -16,7 +18,7 @@
 export default {
   data() {
     return {
-      title: "Easy life",
+      title: "Happy path",
     };
   },
 };

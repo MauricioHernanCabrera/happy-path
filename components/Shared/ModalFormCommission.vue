@@ -17,8 +17,7 @@
 
     <v-text-field
       label="Valor"
-      v-model="form.value"
-      type="number"
+      v-model.number="form.value"
       min="0"
       :error-messages="valueErrors"
       @input="$v.form.value.$touch()"

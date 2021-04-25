@@ -1,4 +1,4 @@
-import { findIndex } from "lodash";
+import { findIndex, find } from "lodash";
 
 export default {
   data() {
@@ -28,6 +28,10 @@ export default {
 
     findIndexById(array, _id) {
       return findIndex(array, ["_id", _id]);
+    },
+
+    find(array, _id) {
+      return find(array, ["_id", _id]);
     },
 
     updateItemIsLoadingProp(array, _id, value) {
