@@ -54,7 +54,12 @@
                     <v-card-text class="pb-0">
                       <v-text-field
                         :label="`Camino ${pathIndex + 1} `"
-                        v-model="paths[pathIndex].name"
+                        readonly
+                        :value="
+                          pathItem.commissions
+                            .map((commissionItem) => commissionItem.name)
+                            .join(' > ')
+                        "
                       ></v-text-field>
 
                       <v-text-field
@@ -490,7 +495,6 @@ export default {
         commissions: [{ value: 0, name: null, _id: 1 }],
         value: 0,
         currencySelected: "currency_1",
-        name: null,
       },
 
       DEFAULT_COMMISSION: {
@@ -509,35 +513,30 @@ export default {
         {
           commissions: ["commission_1", "commission_2"],
           value: 0,
-          name: "WISE>BINANCE>ARS",
           currencySelected: "currency_1",
           _id: "path_1",
         },
         {
           commissions: ["commission_1", "commission_5"],
           value: 0,
-          name: "WISE>DOLAR_FISICO>ARS",
           currencySelected: "currency_2",
           _id: "path_2",
         },
         {
           commissions: ["commission_1", "commission_2", "commission_4"],
           value: 0,
-          name: "WISE>BINANCE>DOLAR_FISICO>ARS",
           currencySelected: "currency_2",
           _id: "path_3",
         },
         {
           commissions: ["commission_3", "commission_5"],
           value: 0,
-          name: "PAYONEER>DOLAR_FISICO>ARS",
           currencySelected: "currency_2",
           _id: "path_4",
         },
         {
           commissions: ["commission_3", "commission_7", "commission_4"],
           value: 0,
-          name: "PAYONEER>BINANCE>DOLAR_FISICO>ARS",
           currencySelected: "currency_2",
           _id: "path_5",
         },
@@ -547,35 +546,30 @@ export default {
         {
           commissions: ["commission_1", "commission_2"],
           value: 0,
-          name: "WISE>BINANCE>ARS",
           currencySelected: "currency_1",
           _id: "path_1",
         },
         {
           commissions: ["commission_1", "commission_2", "commission_4"],
           value: 0,
-          name: "WISE>BINANCE>DOLAR_FISICO>ARS",
           currencySelected: "currency_2",
           _id: "path_2",
         },
         {
           commissions: ["commission_1", "commission_5"],
           value: 0,
-          name: "WISE>DOLAR_FISICO>ARS",
           currencySelected: "currency_2",
           _id: "path_3",
         },
         {
           commissions: ["commission_3", "commission_5"],
           value: 0,
-          name: "PAYONEER>DOLAR_FISICO>ARS",
           currencySelected: "currency_2",
           _id: "path_4",
         },
         {
           commissions: ["commission_3", "commission_7", "commission_4"],
           value: 0,
-          name: "PAYONEER>BINANCE>DOLAR_FISICO>ARS",
           currencySelected: "currency_2",
           _id: "path_5",
         },
