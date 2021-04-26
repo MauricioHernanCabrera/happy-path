@@ -1,15 +1,13 @@
 <template>
   <v-app dark>
-    <v-app-bar fixed app>
+    <v-app-bar fixed app color="#1E1E1E" class="elevation-0">
       <v-toolbar-title v-text="title" />
 
       <v-spacer></v-spacer>
     </v-app-bar>
 
     <v-main>
-      <v-container>
-        <nuxt />
-      </v-container>
+      <nuxt />
     </v-main>
   </v-app>
 </template>

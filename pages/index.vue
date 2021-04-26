@@ -1,394 +1,415 @@
 <template>
   <v-row class="home">
     <v-col cols="12">
-      <v-row>
-        <v-col cols="12">
-          <v-btn @click="config.showConfig = !config.showConfig">
-            <v-icon left> mdi-cog </v-icon>
-            Configuración global
-          </v-btn>
+      <v-tabs v-model="tab" centered dark icons-and-text>
+        <v-tabs-slider></v-tabs-slider>
 
-          <v-btn @click="config.showCommissions = !config.showCommissions">
-            <v-icon left> mdi-thumb-down-outline </v-icon>
-            Comisiones
-          </v-btn>
-
-          <v-btn @click="config.showCurrencies = !config.showCurrencies">
-            <v-icon left> mdi-cash-multiple </v-icon>
-            Monedas
-          </v-btn>
-
-          <v-btn
-            @click="
-              config.showPreAssembledPaths = !config.showPreAssembledPaths
-            "
-          >
-            <v-icon left> mdi-shape-outline </v-icon>
-            Pre armados
-          </v-btn>
-        </v-col>
-
-        <template v-if="config.showConfig">
-          <v-col cols="12" class="d-flex align-center">
-            <span class="caption">Global</span>
-          </v-col>
-
-          <v-col cols="12">
-            <v-row>
-              <v-col cols="12" sm="6" md="4" lg="3" xl="2">
-                <v-card>
-                  <v-card-text>
-                    <v-text-field
-                      label="Valor"
-                      type="number"
-                      v-model.number="config.value"
-                      @input="updatePathsValues"
-                    ></v-text-field>
-                  </v-card-text>
-                </v-card>
-              </v-col>
-            </v-row>
-          </v-col>
-
-          <v-col cols="12">
-            <v-divider></v-divider>
-          </v-col>
-        </template>
-
-        <template v-if="config.showCommissions">
-          <v-col cols="12" class="d-flex align-center">
-            <span class="caption">Comisiones</span>
-
-            <v-spacer></v-spacer>
-
-            <v-btn
-              @click="
-                addItem(commissions, { _id: Date.now(), ...DEFAULT_COMMISSION })
-              "
-            >
-              <v-icon>mdi-plus</v-icon>
-              nueva comisión
-            </v-btn>
-          </v-col>
-
-          <v-col cols="12" v-if="commissions.length === 0" class="text-center">
-            No hay comisiones cargadas
-          </v-col>
-
-          <v-col v-else cols="12">
-            <v-row class="home__list">
-              <v-col
-                cols="12"
-                sm="6"
-                md="4"
-                lg="3"
-                xl="2"
-                v-for="commissionItem in commissions"
-                :key="commissionItem._id"
-              >
-                <v-card>
-                  <v-card-text>
-                    <v-text-field
-                      label="Nombre"
-                      v-model="commissionItem.name"
-                    ></v-text-field>
-
-                    <v-text-field
-                      label="Porcentaje"
-                      type="number"
-                      v-model.number="commissionItem.value"
-                    ></v-text-field>
-                  </v-card-text>
-
-                  <v-divider></v-divider>
-
-                  <v-card-text>
-                    <v-btn @click="deleteItem(commissions, commissionItem._id)">
-                      eliminar
-                    </v-btn>
-                  </v-card-text>
-                </v-card>
-              </v-col>
-            </v-row>
-          </v-col>
-
-          <v-col cols="12">
-            <v-divider></v-divider>
-          </v-col>
-        </template>
-
-        <template v-if="config.showCurrencies">
-          <v-col cols="12" class="d-flex align-center">
-            <span class="caption">Monedas</span>
-
-            <v-spacer></v-spacer>
-
-            <v-btn
-              @click="
-                addItem(currencies, { _id: Date.now(), ...DEFAULT_CURRENCY })
-              "
-            >
-              <v-icon>mdi-plus</v-icon>
-              nueva moneda
-            </v-btn>
-          </v-col>
-
-          <v-col cols="12" v-if="currencies.length === 0" class="text-center">
-            No hay monedas cargadas
-          </v-col>
-
-          <v-col v-else cols="12">
-            <v-row class="home__list">
-              <v-col
-                cols="12"
-                sm="6"
-                md="4"
-                lg="3"
-                xl="2"
-                v-for="currencyItem in currencies"
-                :key="currencyItem._id"
-              >
-                <v-card>
-                  <v-card-text>
-                    <v-text-field
-                      label="Nombre"
-                      v-model="currencyItem.name"
-                    ></v-text-field>
-
-                    <v-text-field
-                      label="Valor"
-                      type="number"
-                      v-model.number="currencyItem.price"
-                    ></v-text-field>
-                  </v-card-text>
-
-                  <v-divider></v-divider>
-
-                  <v-card-text>
-                    <v-btn @click="deleteItem(currencies, currencyItem._id)">
-                      eliminar
-                    </v-btn>
-                  </v-card-text>
-                </v-card>
-              </v-col>
-            </v-row>
-          </v-col>
-
-          <v-col cols="12">
-            <v-divider></v-divider>
-          </v-col>
-        </template>
-
-        <template v-if="config.showPreAssembledPaths">
-          <v-col cols="12" class="d-flex align-center">
-            <span class="caption">Caminos pre armados</span>
-          </v-col>
-
-          <v-col
-            cols="12"
-            v-if="preAssembledPaths.length === 0"
-            class="text-center"
-          >
-            No hay caminos pre armados
-          </v-col>
-
-          <v-col v-else cols="12">
-            <v-row class="home__list">
-              <v-col
-                cols="12"
-                sm="6"
-                md="4"
-                lg="3"
-                v-for="(
-                  preAssembledPathItem, preAssembledPathIndex
-                ) in preAssembledPaths"
-                :key="preAssembledPathItem._id"
-              >
-                <v-card>
-                  <v-card-text>
-                    <v-text-field
-                      label="Nombre"
-                      readonly
-                      :value="
-                        preAssembledPathsMap[preAssembledPathIndex].commissions
-                          .map((commissionItem) => commissionItem.name)
-                          .join(' > ')
-                      "
-                    ></v-text-field>
-
-                    <v-text-field
-                      label="Comisiones"
-                      disabled
-                      :value="
-                        preAssembledPathsMap[preAssembledPathIndex].commissions
-                          .map(
-                            (commissionItem) =>
-                              `${formatMoney(commissionItem.value)}%`
-                          )
-                          .join(' > ')
-                      "
-                    ></v-text-field>
-                  </v-card-text>
-
-                  <v-divider></v-divider>
-
-                  <v-card-text>
-                    <v-btn
-                      @click="
-                        addItem(paths, {
-                          ...preAssembledPathItem,
-                          _id: Date.now(),
-                        })
-                      "
-                    >
-                      Usar camino
-                    </v-btn>
-                  </v-card-text>
-                </v-card>
-              </v-col>
-            </v-row>
-          </v-col>
-
-          <v-col cols="12">
-            <v-divider></v-divider>
-          </v-col>
-        </template>
-      </v-row>
-
-      <v-row>
-        <v-col cols="12" class="d-flex align-center">
-          <span class="caption">Caminos</span>
-
-          <v-spacer></v-spacer>
-
-          <v-btn @click="addItem(paths, { _id: Date.now(), ...DEFAULT_PATH })">
-            <v-icon>mdi-plus</v-icon>
-            nuevo camino
-          </v-btn>
-        </v-col>
-      </v-row>
-
-      <v-row v-if="calculatedPaths.length === 0">
-        <v-col cols="12" class="text-center"> No hay caminos cargados </v-col>
-      </v-row>
-
-      <v-row class="home__list" v-else>
-        <v-col
-          cols="12"
-          sm="6"
-          md="4"
-          xl="3"
-          v-for="(pathItem, pathIndex) in calculatedPaths"
-          :key="pathIndex"
+        <v-tab
+          v-for="tabItem in tabs"
+          :key="tabItem.name"
+          :href="`#${tabItem.value}`"
         >
-          <v-card class="home__path_item">
-            <v-card-text class="pb-0">
-              <v-text-field
-                :label="`Camino ${pathIndex + 1} `"
-                v-model="paths[pathIndex].name"
-              ></v-text-field>
+          {{ tabItem.name }}
+          <v-icon>mdi-{{ tabItem.icon }}</v-icon>
+        </v-tab>
+      </v-tabs>
 
-              <v-text-field
-                label="Valor"
-                type="number"
-                v-model="paths[pathIndex].value"
-              ></v-text-field>
+      <v-tabs-items v-model="tab" class="home__tabs_items">
+        <v-tab-item value="tab-paths">
+          <v-row>
+            <v-col cols="12">
+              <v-row>
+                <v-col cols="12" class="d-flex align-center">
+                  <span class="caption">Caminos</span>
 
-              <v-select
-                v-for="(commissionItem, commissionIndex) in paths[pathIndex]
-                  .commissions"
-                :key="`${pathIndex}_${commissionIndex}`"
-                :items="commissions"
-                :value="commissionItem"
-                :label="`Selecciona comisión ${commissionIndex + 1}`"
-                @input="
-                  (value) =>
-                    updatePathCommission(value, pathIndex, commissionIndex)
-                "
-                item-text="name"
-                item-value="_id"
-              >
-                <template v-slot:selection="{ item }">
-                  ({{ item.value | formatMoney(...moneyConfig) }}%)
-                  {{ item.name }}
-                </template>
+                  <v-spacer></v-spacer>
 
-                <template v-slot:append>
-                  <v-icon
-                    left
-                    @click="deletePathCommission(pathIndex, commissionIndex)"
+                  <v-btn
+                    @click="
+                      addItem(paths, { _id: Date.now(), ...DEFAULT_PATH })
+                    "
                   >
-                    mdi-close
-                  </v-icon>
-                </template>
-              </v-select>
+                    <v-icon>mdi-plus</v-icon>
+                    nuevo camino
+                  </v-btn>
+                </v-col>
+              </v-row>
 
-              <v-btn @click="addPathCommission(pathIndex)" class="mb-4">
+              <v-row v-if="calculatedPaths.length === 0">
+                <v-col cols="12" class="text-center">
+                  No hay caminos cargados
+                </v-col>
+              </v-row>
+
+              <v-row class="home__list" v-else>
+                <v-col
+                  cols="12"
+                  sm="6"
+                  md="4"
+                  xl="3"
+                  v-for="(pathItem, pathIndex) in calculatedPaths"
+                  :key="pathIndex"
+                >
+                  <v-card class="home__path_item">
+                    <v-card-text class="pb-0">
+                      <v-text-field
+                        :label="`Camino ${pathIndex + 1} `"
+                        v-model="paths[pathIndex].name"
+                      ></v-text-field>
+
+                      <v-text-field
+                        label="Valor"
+                        type="number"
+                        v-model="paths[pathIndex].value"
+                      ></v-text-field>
+
+                      <v-select
+                        v-for="(commissionItem, commissionIndex) in paths[
+                          pathIndex
+                        ].commissions"
+                        :key="`${pathIndex}_${commissionIndex}`"
+                        :items="commissions"
+                        :value="commissionItem"
+                        :label="`Selecciona comisión ${commissionIndex + 1}`"
+                        @input="
+                          (value) =>
+                            updatePathCommission(
+                              value,
+                              pathIndex,
+                              commissionIndex
+                            )
+                        "
+                        item-text="name"
+                        item-value="_id"
+                      >
+                        <template v-slot:selection="{ item }">
+                          ({{ item.value | formatMoney(...moneyConfig) }}%)
+                          {{ item.name }}
+                        </template>
+
+                        <template v-slot:append>
+                          <v-icon
+                            left
+                            @click="
+                              deletePathCommission(pathIndex, commissionIndex)
+                            "
+                          >
+                            mdi-close
+                          </v-icon>
+                        </template>
+                      </v-select>
+
+                      <v-btn @click="addPathCommission(pathIndex)" class="mb-4">
+                        <v-icon>mdi-plus</v-icon>
+                        nueva comisión
+                      </v-btn>
+                    </v-card-text>
+
+                    <v-spacer></v-spacer>
+
+                    <v-divider></v-divider>
+
+                    <v-card-text class="pt-0">
+                      <v-radio-group
+                        v-model="paths[pathIndex].currencySelected"
+                      >
+                        <template v-slot:label>
+                          <div>Moneda</div>
+                        </template>
+
+                        <v-radio
+                          v-for="currencyItem in currencies"
+                          :key="currencyItem._id"
+                          :value="currencyItem._id"
+                          :label="currencyItem.name"
+                        >
+                        </v-radio>
+                      </v-radio-group>
+
+                      <v-text-field
+                        :label="`Total en ${get(
+                          pathItem,
+                          'currency.name',
+                          '-'
+                        )}`"
+                        :value="pathItem.totalDolar"
+                        disabled
+                      ></v-text-field>
+
+                      <v-text-field
+                        :label="`Comisión total`"
+                        disabled
+                        :value="pathItem.totalFee"
+                      ></v-text-field>
+
+                      <v-text-field
+                        :label="`Porcentaje de comision`"
+                        disabled
+                        :value="`${pathItem.percentageFee}%`"
+                      ></v-text-field>
+
+                      <v-text-field
+                        disabled
+                        :label="`Valor del ${get(
+                          pathItem,
+                          'currency.name',
+                          '-'
+                        )}`"
+                        :value="get(pathItem, 'currency.price', '-')"
+                      ></v-text-field>
+
+                      <v-text-field
+                        label="Total ARS"
+                        readonly
+                        :value="pathItem.totalArs"
+                      ></v-text-field>
+                    </v-card-text>
+
+                    <v-divider></v-divider>
+
+                    <v-card-text>
+                      <v-btn @click="deleteItem(paths, paths[pathIndex]._id)">
+                        eliminar
+                      </v-btn>
+                    </v-card-text>
+                  </v-card>
+                </v-col>
+              </v-row>
+            </v-col>
+          </v-row>
+        </v-tab-item>
+
+        <v-tab-item value="tab-commissions">
+          <v-row>
+            <v-col cols="12" class="d-flex align-center">
+              <span class="caption">Comisiones</span>
+
+              <v-spacer></v-spacer>
+
+              <v-btn
+                @click="
+                  addItem(commissions, {
+                    _id: Date.now(),
+                    ...DEFAULT_COMMISSION,
+                  })
+                "
+              >
                 <v-icon>mdi-plus</v-icon>
                 nueva comisión
               </v-btn>
-            </v-card-text>
+            </v-col>
 
-            <v-spacer></v-spacer>
+            <v-col
+              cols="12"
+              v-if="commissions.length === 0"
+              class="text-center"
+            >
+              No hay comisiones cargadas
+            </v-col>
 
-            <v-divider></v-divider>
+            <v-col v-else cols="12">
+              <v-row class="home__list">
+                <v-col
+                  cols="12"
+                  sm="6"
+                  md="4"
+                  lg="3"
+                  xl="2"
+                  v-for="commissionItem in commissions"
+                  :key="commissionItem._id"
+                >
+                  <v-card>
+                    <v-card-text>
+                      <v-text-field
+                        label="Nombre"
+                        v-model="commissionItem.name"
+                      ></v-text-field>
 
-            <v-card-text class="pt-0">
-              <v-radio-group v-model="paths[pathIndex].currencySelected">
-                <template v-slot:label>
-                  <div>Moneda</div>
-                </template>
+                      <v-text-field
+                        label="Porcentaje"
+                        type="number"
+                        v-model.number="commissionItem.value"
+                      ></v-text-field>
+                    </v-card-text>
 
-                <v-radio
+                    <v-divider></v-divider>
+
+                    <v-card-text>
+                      <v-btn
+                        @click="deleteItem(commissions, commissionItem._id)"
+                      >
+                        eliminar
+                      </v-btn>
+                    </v-card-text>
+                  </v-card>
+                </v-col>
+              </v-row>
+            </v-col>
+          </v-row>
+        </v-tab-item>
+
+        <v-tab-item value="tab-currencies">
+          <v-row>
+            <v-col cols="12" class="d-flex align-center">
+              <span class="caption">Monedas</span>
+
+              <v-spacer></v-spacer>
+
+              <v-btn
+                @click="
+                  addItem(currencies, { _id: Date.now(), ...DEFAULT_CURRENCY })
+                "
+              >
+                <v-icon>mdi-plus</v-icon>
+                nueva moneda
+              </v-btn>
+            </v-col>
+
+            <v-col cols="12" v-if="currencies.length === 0" class="text-center">
+              No hay monedas cargadas
+            </v-col>
+
+            <v-col v-else cols="12">
+              <v-row class="home__list">
+                <v-col
+                  cols="12"
+                  sm="6"
+                  md="4"
+                  lg="3"
+                  xl="2"
                   v-for="currencyItem in currencies"
                   :key="currencyItem._id"
-                  :value="currencyItem._id"
-                  :label="currencyItem.name"
                 >
-                </v-radio>
-              </v-radio-group>
+                  <v-card>
+                    <v-card-text>
+                      <v-text-field
+                        label="Nombre"
+                        v-model="currencyItem.name"
+                      ></v-text-field>
 
-              <v-text-field
-                :label="`Total en ${get(pathItem, 'currency.name', '-')}`"
-                :value="pathItem.totalDolar"
-                disabled
-              ></v-text-field>
+                      <v-text-field
+                        label="Valor"
+                        type="number"
+                        v-model.number="currencyItem.price"
+                      ></v-text-field>
+                    </v-card-text>
 
-              <v-text-field
-                :label="`Comisión total`"
-                disabled
-                :value="pathItem.totalFee"
-              ></v-text-field>
+                    <v-divider></v-divider>
 
-              <v-text-field
-                :label="`Porcentaje de comision`"
-                disabled
-                :value="`${pathItem.percentageFee}%`"
-              ></v-text-field>
+                    <v-card-text>
+                      <v-btn @click="deleteItem(currencies, currencyItem._id)">
+                        eliminar
+                      </v-btn>
+                    </v-card-text>
+                  </v-card>
+                </v-col>
+              </v-row>
+            </v-col>
+          </v-row>
+        </v-tab-item>
 
-              <v-text-field
-                disabled
-                :label="`Valor del ${get(pathItem, 'currency.name', '-')}`"
-                :value="get(pathItem, 'currency.price', '-')"
-              ></v-text-field>
+        <v-tab-item value="tab-pre-assembled-path">
+          <v-row>
+            <v-col cols="12" class="d-flex align-center">
+              <span class="caption">Caminos pre armados</span>
+            </v-col>
 
-              <v-text-field
-                label="Total ARS"
-                readonly
-                :value="pathItem.totalArs"
-              ></v-text-field>
-            </v-card-text>
+            <v-col
+              cols="12"
+              v-if="preAssembledPaths.length === 0"
+              class="text-center"
+            >
+              No hay caminos pre armados
+            </v-col>
 
-            <v-divider></v-divider>
+            <v-col v-else cols="12">
+              <v-row class="home__list">
+                <v-col
+                  cols="12"
+                  sm="6"
+                  md="4"
+                  lg="3"
+                  v-for="(
+                    preAssembledPathItem, preAssembledPathIndex
+                  ) in preAssembledPaths"
+                  :key="preAssembledPathItem._id"
+                >
+                  <v-card>
+                    <v-card-text>
+                      <v-text-field
+                        label="Nombre"
+                        readonly
+                        :value="
+                          preAssembledPathsMap[
+                            preAssembledPathIndex
+                          ].commissions
+                            .map((commissionItem) => commissionItem.name)
+                            .join(' > ')
+                        "
+                      ></v-text-field>
 
-            <v-card-text>
-              <v-btn @click="deleteItem(paths, paths[pathIndex]._id)">
-                eliminar
-              </v-btn>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
+                      <v-text-field
+                        label="Comisiones"
+                        disabled
+                        :value="
+                          preAssembledPathsMap[
+                            preAssembledPathIndex
+                          ].commissions
+                            .map(
+                              (commissionItem) =>
+                                `${formatMoney(commissionItem.value)}%`
+                            )
+                            .join(' > ')
+                        "
+                      ></v-text-field>
+                    </v-card-text>
+
+                    <v-divider></v-divider>
+
+                    <v-card-text>
+                      <v-btn
+                        @click="
+                          addItem(paths, {
+                            ...preAssembledPathItem,
+                            _id: Date.now(),
+                          })
+                        "
+                      >
+                        Usar camino
+                      </v-btn>
+                    </v-card-text>
+                  </v-card>
+                </v-col>
+              </v-row>
+            </v-col>
+          </v-row>
+        </v-tab-item>
+
+        <v-tab-item value="tab-global-config">
+          <v-row>
+            <v-col cols="12" class="d-flex align-center">
+              <span class="caption">Global</span>
+            </v-col>
+
+            <v-col cols="12">
+              <v-row>
+                <v-col cols="12" sm="6" md="4" lg="3" xl="2">
+                  <v-card>
+                    <v-card-text>
+                      <v-text-field
+                        label="Valor"
+                        type="number"
+                        v-model.number="config.value"
+                        @input="updatePathsValues"
+                      ></v-text-field>
+                    </v-card-text>
+                  </v-card>
+                </v-col>
+              </v-row>
+            </v-col>
+          </v-row>
+        </v-tab-item>
+      </v-tabs-items>
     </v-col>
   </v-row>
 </template>
@@ -406,6 +427,36 @@ export default {
 
   data() {
     return {
+      tabs: [
+        {
+          value: "tab-paths",
+          name: "Caminos",
+          icon: "highway",
+        },
+        {
+          value: "tab-commissions",
+          name: "Comisiones",
+          icon: "thumb-down-outline",
+        },
+        {
+          value: "tab-currencies",
+          name: "Monedas",
+          icon: "cash-multiple",
+        },
+        {
+          value: "tab-pre-assembled-path",
+          name: "Pre armados",
+          icon: "shape-outline",
+        },
+        {
+          value: "tab-global-config",
+          name: "Configuración global",
+          icon: "cog",
+        },
+      ],
+
+      tab: "tab-",
+
       config: {
         value: 0,
         showConfig: false,
@@ -649,5 +700,10 @@ export default {
   height: 100%;
   display: flex;
   flex-direction: column;
+}
+
+.home__tabs_items {
+  background-color: transparent !important;
+  padding: 24px;
 }
 </style>
